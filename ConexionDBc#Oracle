@@ -1,0 +1,113 @@
+using Oracle.ManagedDataAccess.Client;
+using System;
+using System.Data;
+using WebApiSICAFM.Utilidades;
+
+namespace WebApiSICAFM.BDD
+{
+    public class GestorBaseDatos
+    {
+        private string[] gstrparam = new string[3];
+        public string strres = "";
+        //private object objcon;
+        private string strConexionRegistro;
+        public string Instancia;
+        private string directorio = "C:\\conexion", nombreArchivoConfig = "configbdd.solu";
+        Archivo archivoConfig = new Archivo();
+
+        /// <summary>
+        /// Método que obtiene los datos del registro BDD Oracle
+        /// </summary>
+        /// <returns></returns>
+        private bool SetearAplicacionOracle()
+        {
+            try
+            {
+                archivoConfig.path = directorio + "\\" + nombreArchivoConfig;
+                if (archivoConfig.Existe())
+                {
+                    string[] credenciales = archivoConfig.Leer().Split('|');
+
+                    strConexionRegistro = credenciales[0]; // conexion;
+                    Instancia = credenciales[1]; //instancia;                    
+                }
+                strres = "OK";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                strres = "No se puede conectar con el Oracle: " + ex.Message;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Constructor de la Clase
+        /// </summary>
+        /// <param name="BaseAConectarse">Base de Datos con la cual va a conectarse (SQL u ORACLE)</param>
+        public GestorBaseDatos()
+        {
+                this.SetearAplicacionOracle();
+        }
+
+        /// <summary>
+        /// Método para ejecutar un consulta a la base de datos de Oracle
+        /// </summary>
+        /// <param name="consulta">Consulta(Select) que desea ejecutar</param>
+        /// <param name="respuesta">Variable que retorna el estado de ejecución del procedimiento.</param>
+        /// <returns></returns>
+        public DataSet obtenerDatosOracle(string consulta, ref string respuesta)
+        {
+            DataSet dtTabla = new DataSet();
+            try
+            {
+                string strConexion = "";
+                strConexion = strConexionRegistro;
+
+                OracleConnection Conexion = new OracleConnection(strConexion);
+                DataSet dsTabla = new DataSet();
+
+                Conexion.Open();
+                // Dim cmdBuscar As New oracleCommand
+                // cmdBuscar = New oracleCommand(strtvista, Conexion)
+
+                OracleDataAdapter da = new OracleDataAdapter(consulta, Conexion);
+                da.Fill(dtTabla, "Tabla");
+                Conexion.Close();
+                respuesta = "OK";
+            }
+            catch (Exception ex) { respuesta = ex.Message; }
+
+            return dtTabla;
+        }
+
+        /// <summary>
+        /// Método para ejecutar un procedimietno que no devuelve datos (INSERT, DELETE, UPDATE) a la base de datos de Oracle
+        /// </summary>
+        /// <param name="query">Query con la sentencia Oracle que se va a ejecutar</param>
+        /// <param name="respuesta">Variable que retorna el estado de ejecución del procedimiento.</param>
+        /// <returns></returns>
+        public bool setearDatosOracle(string query, ref string respuesta)
+        {
+            try
+            {
+                string strConexion = "";
+                strConexion = strConexionRegistro;
+
+                using (OracleConnection connection = new OracleConnection(strConexion))
+                {
+                    OracleCommand command = new OracleCommand(query, connection);
+                    command.Connection.Open();
+                    command.ExecuteNonQuery();
+                }
+                respuesta = "OK";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                respuesta = ex.Message;
+                return false;
+            }
+        }
+    }
+}
