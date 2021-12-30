@@ -1,0 +1,98 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using WebApiSICAFM.Modelo;
+using WebApiSICAFM.Utilidades;
+
+namespace WebApiSICAFM.BDD
+{
+    public class StoreProcedure
+    {
+        public string Instancia { get; set; }
+        public StoreProcedure() { }
+
+        public string spSelTodosXTabla(string NombreTabla)
+        {
+            string query = "SELECT * FROM " + Instancia + "." + NombreTabla;
+            return query;
+        }
+
+        public string spSelActivo(string _tipo)
+        {
+            string query = "SELECT * FROM " + Instancia + "." + "ACTIVO WHERE cat_codigo = '" + _tipo + "'";
+            return query;
+        }
+
+        public string spSelActivoXTag(string codigoBarras)
+        {
+            string query = "SELECT * FROM " + Instancia + ".ACTIVO WHERE act_codigo_barras = '" + codigoBarras + "'";
+            return query;
+        }
+
+        public string spSelActivoXTexto(string opcion, string texto)
+        {
+            string query = "";
+            switch (opcion)
+            {
+                case "1":
+                    query = "SELECT * FROM " + Instancia + ".ACTIVO WHERE act_codigo = '" + texto + "'";
+                    break;
+                case "2":
+                    query = "SELECT * FROM " + Instancia + ".ACTIVO WHERE act_nroserie = '" + texto + "'";
+                    break;
+                case "3":
+                    query = "SELECT * FROM " + Instancia + ".ACTIVO WHERE CUS_CODIGO IN ( SELECT CUS_CODIGO FROM " + Instancia + ".CUSTODIO WHERE UPPER(CUS_NOMBRE) LIKE UPPER('%" + texto+"%'))";
+                    break;
+            }
+            return query;
+        }
+
+        public string spSelTomasFisicas(string _responsable)
+        {
+            string query = "SELECT * FROM " + Instancia + ".TOMAFISICAPDA WHERE tf_responsable = '" + _responsable.Trim() + "'";
+            return query;
+        }
+
+        public string spActTomasFisicaEstado(string _codigoTF, string _estado, string _codigoU)
+        {
+            string query = "";
+            if (_estado.Equals("EN PROCESO"))
+                query = "UPDATE " + Instancia + ".TOMAFISICAPDA SET TF_ESTADO = '" + _estado + "', FECHA_PROCESO = SYSTIMESTAMP, USUARIO_PROCESO = '" + _codigoU + "'  WHERE TF_CODIGO = '" + _codigoTF + "'";
+            if (_estado.Equals("CERRADO PDA"))
+                query = "UPDATE " + Instancia + ".TOMAFISICAPDA SET TF_ESTADO = '" + _estado + "', FECHA_CERRADO_PDA = SYSTIMESTAMP, USUARIO_CERRADO_PDA = '" + _codigoU + "'  WHERE TF_CODIGO = '" + _codigoTF + "'";
+            
+            return query;
+        }
+
+        public string spSelTomasFisicasDetalle(string _tfCodigo)
+        {
+            string query = "SELECT * FROM " + Instancia + ".caractivopda WHERE tf_codigo = '" + _tfCodigo.Trim() + "'";
+            return query;
+        }
+
+        public string spInsTomasFisicasDetalle(TomaFisicaPdaDetalle t)
+        {
+            //string query = "INSERT INTO " + Instancia + ".aftomafis VALUES('" + t.Activo + "','" + t.CodigoBarras + "','" + t.Subtipo + "','" + t.Marca + "','" + t.Modelo + "',";
+            //query += "'" + t.Serie + "','" + t.UbicacionFisica + "','" + t.AreaAdministrativa + "','" + t.Custodio + "','" + t.Observaciones + "','" + t.Estado + "','" + t.SegCodigo + "',";
+            //query += "'" + t.CentroCosto + "'," + t.Verificado + ",'04/03/2021 11:23:23 AM','" + t.UsuarioVerificado + "'," + t.Modificado + "," + t.Nuevo + ",";
+            //query += t.Revisado + ",'23/03/2021 05:20:05 PM',SYSTIMESTAMP,'" + t.UsuarioSubida + "',SYSTIMESTAMP,'" + t.UsuarioBajada + "'," + t.Empresa + ",SYSTIMESTAMP,";
+            //query += "'" + t.UsuarioCreacion + "','" + t.TerminalCreacion + "',SYSTIMESTAMP,'" + t.UsuarioModificacion + "','" + t.TerminalModificacion + "','" + t.Proveedor + "',";
+            //query += "'" + t.Color + "','" + t.Medida + "','" + t.Descripcion + "','" + t.MetodoDepreciacion + "','" + t.ValorCompra + "','" + t.ValorActual + "','06/10/1997',";
+            //query += "'" + t.DepAcum + "','06/10/1997','06/10/2007','06/10/2007'," + t.AnioProcedencia + ",'" + t.ValorLibros + "','" + t.EstadoDepre + "',";
+            //query += "'" + t.TiempoDepre + "','" + t.Porcentaje + "','" + t.ValorRecidual + "','" + t.ValorRazonable + "','" + t.TipoActivo + "'," + t.CodigoItemCompuesto + ",";
+            //query += "'" + t.EstadoFisico + "','" + t.Tipo + "','" + t.ImagenPath + "','FD','PROY')";
+
+            string query = "INSERT INTO " + Instancia + ".aftomafis VALUES('" + t.Activo + "','" + t.CodigoBarras + "','" + t.Subtipo + "','" + t.Marca + "','" + t.Modelo + "',";
+            query += "'" + t.Serie + "','" + t.UbicacionFisica + "','" + t.AreaAdministrativa + "','" + t.Custodio + "','" + t.Observaciones + "','" + t.Estado + "','" + t.SegCodigo + "',";
+            query += "'" + t.CentroCosto + "'," + t.Verificado + ",'"+SIConversiones.ToDateFormat(t.FechaVerificado)+"','" + t.UsuarioSubida + "','" + t.Modificado + "','" + t.Nuevo + "','";
+            query += t.Revisado + "','"+ SIConversiones.ToDateFormat(t.FechaRevisado) + "',SYSTIMESTAMP,'" + t.UsuarioSubida + "','"+ SIConversiones.ToDateFormat(t.FechaBajada) + "','" + t.UsuarioBajada + "'," + t.Empresa + ",'"+ SIConversiones.ToDateFormat(t.FechaCreacion) + "',";
+            query += "'" + t.UsuarioCreacion + "','" + t.TerminalCreacion + "','"+ SIConversiones.ToDateFormat(t.FechaModificacion) + "','" + t.UsuarioModificacion + "','" + t.TerminalModificacion + "','" + t.Proveedor + "',";
+            query += "'" + t.Color + "','" + t.Medida + "','" + t.Descripcion + "','" + t.MetodoDepreciacion + "','" + t.ValorCompra + "','" + t.ValorActual + "','"+ SIConversiones.ToDateFormat(t.FechaAdquisicion) + "',";
+            query += "'" + t.DepAcum + "','"+ SIConversiones.ToDateFormatShort(t.FechaIniDepre) + "','" + SIConversiones.ToDateFormatShort(t.FechaFinDepre) + "','" + SIConversiones.ToDateFormatShort(t.FechaRetiroContable) + "'," + t.AnioProcedencia + ",'" + t.ValorLibros + "','" + t.EstadoDepre + "',";
+            query += "'" + t.TiempoDepre + "','" + t.Porcentaje + "','" + t.ValorRecidual + "','" + t.ValorRazonable + "','" + t.TipoActivo + "','" + t.CodigoItemCompuesto + "',";
+            query += "'" + t.EstadoFisico + "','" + t.Tipo + "','" + t.ImagenPath + "','FD','" + t.CodigoTomaFisica + "')";
+            return query;
+        }
+    }
+}
