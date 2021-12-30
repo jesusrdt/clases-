@@ -1,0 +1,130 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
+
+namespace WSPeoplesi.Util
+{
+    public class Archivo 
+    {
+        public string path;
+
+        public bool Crear()
+        {
+            try
+            {
+                if (!Existe())
+                    using (System.IO.File.Create(path)) { }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool Eliminar()
+        {
+            try
+            {
+                if (Existe())
+                {
+                    System.IO.FileInfo info = new System.IO.FileInfo(path);
+                    info.Attributes = System.IO.FileAttributes.Normal;
+                    System.IO.File.Delete(path);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+        }
+
+        public string Leer()
+        {
+            String line = "", respuesta = "";
+            try
+            {
+                //Pass the file path and file name to the StreamReader constructor
+                StreamReader sr = new StreamReader(path);//("C:\\Sample.txt");
+
+                //Read the first line of text
+                line = sr.ReadLine();
+
+                //Continue to read until you reach end of file
+                while (line != null)
+                {
+                    if (respuesta.Equals(""))
+                        respuesta = line;
+                    else
+                        respuesta += line + Environment.NewLine;
+
+                    //Read the next line
+                    line = sr.ReadLine();
+                }
+
+                //close the file
+                sr.Close();
+            }
+            catch (Exception e)
+            {
+                respuesta = e.Message;
+                //Console.WriteLine("Exception: " + e.Message);
+            }
+            return respuesta;
+        }
+
+        public bool Escribir(string mensaje)
+        {
+            try
+            {
+                //StreamWriter sw = File.AppendText(path); //new StreamWriter(path);
+
+                //sw.WriteLine(mensaje);
+                //sw.Close();
+                using (StreamWriter sw = File.CreateText(path))
+                {
+                    sw.WriteLine(mensaje);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool Existe()
+        {
+            if (System.IO.File.Exists(path))
+                return true;
+            else
+                return false;
+
+        }
+
+        public bool NoExiste()
+        {
+            return !Existe();
+        }
+
+        public long PesoEnBytes()
+        {
+            try
+            {
+                FileInfo file = new FileInfo(path);
+                long f = file.Length;
+                return f;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+
+        }
+    }
+}
