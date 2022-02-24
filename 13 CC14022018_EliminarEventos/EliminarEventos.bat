@@ -1,0 +1,1 @@
+SQLCMD -S "SNSQL06" -U "Temp.SiCardSvc" -P "AO9pP1qqVPIJfcQEmN2t" -d "SICredencialesDB" -Q "Exec spEliEventos"
